@@ -2,7 +2,7 @@
 import { Button, Layout, Menu, MenuProps, theme } from 'antd'
 import Sider from 'antd/es/layout/Sider'
 import React, { ForwardRefExoticComponent, RefAttributes, useEffect, useState } from 'react'
-import { DatabaseOutlined, MenuFoldOutlined, MenuUnfoldOutlined, PieChartOutlined, ProductOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, InboxOutlined, MenuFoldOutlined, MenuUnfoldOutlined, PieChartOutlined, ProductOutlined, TeamOutlined } from '@ant-design/icons';
 import { AntdIconProps } from '@ant-design/icons/lib/components/AntdIcon';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -19,6 +19,12 @@ const menuItemsData: MenuItem[] = [
         key: '/',
         label: <Link href={'/'}>Dashboard</Link>,
         icon: PieChartOutlined,
+        children: null,
+    },
+    {
+        key: '/users',
+        label: <Link href={'/users'}>Người dùng</Link>,
+        icon: TeamOutlined,
         children: null,
     },
     {
@@ -44,6 +50,12 @@ const menuItemsData: MenuItem[] = [
         key: '/categories',
         label: <Link href={'/categories'}>Danh mục</Link>,
         icon: DatabaseOutlined,
+        children: null,
+    },
+    {
+        key: '/orders',
+        label: <Link href={'/orders'}>Đơn hàng</Link>,
+        icon: InboxOutlined,
         children: null,
     }
 ]

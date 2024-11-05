@@ -1,0 +1,23 @@
+.pagination {
+    margin-top: 15px;
+}
+
+.pagination .page-item  {
+    color: black;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+}
+
+.pagination .active {
+    background-color: #000;
+    color: white;
+    border: 1px solid #000;
+}
+
+.pagination .page-item:hover:not(.active) {
+    background-color: #ddd;
+}
