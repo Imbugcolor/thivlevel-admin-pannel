@@ -1,6 +1,6 @@
 'use client'
 import styles from './productlist.module.css';
-import { Product } from '@/app/interfaces/product/product.interface';
+import { Product } from '@/libs/interfaces/schema/product/product.interface';
 import { DeleteOutlined, EyeOutlined, FormOutlined } from '@ant-design/icons';
 import { Col, Flex, Row, Select, Switch, Table, Tag } from 'antd';
 import Search from 'antd/es/input/Search';
