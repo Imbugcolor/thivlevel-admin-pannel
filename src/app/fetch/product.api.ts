@@ -43,7 +43,11 @@ export const productsApiRequest = {
     let query = limit && page ? `limit=${limit}&page=${page}` : "";
     if (filterOptions) {
         for (const [key, value] of Object.entries(filterOptions)) {
-            query += `&${key}=${value.toString()}`
+            if (value) {
+              if ((value instanceof Array && value.length > 0) || value.length > 0) {
+                query += `&${key}=${value.toString()}`
+              } 
+            }
         }
     }
     return http.get<ProductDataResponse>(`/products?${query}`);

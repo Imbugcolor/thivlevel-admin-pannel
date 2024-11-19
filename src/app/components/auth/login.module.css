@@ -3,3 +3,8 @@
     border: 1px solid #ccc;
     border-radius: 6px;
 }
+
+.header {
+    width: 100%;
+    text-align: center;
+}

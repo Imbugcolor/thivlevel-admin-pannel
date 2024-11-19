@@ -1,66 +1,18 @@
 'use client'
+import { useAppDispatch, useAppSelector } from '@/libs/hooks';
 import styles from './productlist.module.css';
 import { Product } from '@/libs/interfaces/schema/product/product.interface';
-import { DeleteOutlined, EyeOutlined, FormOutlined } from '@ant-design/icons';
-import { Col, Flex, Row, Select, Switch, Table, Tag } from 'antd';
+import { DeleteOutlined, EyeOutlined, FormOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Avatar, Button, Col, Flex, Popconfirm, Row, Select, Switch, Table, Tag, Typography } from 'antd';
 import Search from 'antd/es/input/Search';
 import { useRouter } from 'next/navigation';
-import React, { ChangeEvent, useState } from 'react'
-
-const data: Product[] = [
-  {
-    _id: "64bf934ded0c1837dd8ee97b",
-    title: "quần jean pro11qj",
-    description: "Quần Jean Pro11qj",
-    content: "test 3",
-    price: 22,
-    images: [
-      {
-        public_id: "mern-shop-ts/guntpjgzkqpfvlsugjhb",
-        url: "https://res.cloudinary.com/vyvie-gram/image/upload/v1687699570/mern-shop-ts/guntpjgzkqpfvlsugjhb.png"
-      },
-      {
-        public_id: "nestjs-app-images/mda6kuehzjwfzme6hdqy",
-        url: "https://res.cloudinary.com/dnv2v2tiz/image/upload/v1727426837/nestjs-app-images/mda6kuehzjwfzme6hdqy.jpg"
-      }
-    ],
-    category: {
-      _id: "64bf930bed0c1837dd8ee977",
-      name: "Quần Jean",
-      createdAt: "2023-07-25T09:16:59.625Z",
-      updatedAt: "2023-07-25T09:16:59.625Z"
-    },
-    variants: [
-      {
-        _id: "64bf934ded0c1837dd8ee97c",
-        size: "L",
-        color: "Đen",
-        inventory: 8
-      },
-      {
-        _id: "64bf934ded0c1837dd8ee97e",
-        size: "L",
-        color: "Đỏ",
-        inventory: 0
-      },
-      {
-        _id: "64bf934ded0c1837dd8ee97d",
-        size: "L",
-        color: "Trắng",
-        inventory: 10
-      }
-    ],
-    sold: 6,
-    rating: 3.6785714285714284,
-    numReviews: 28,
-    isPublished: false,
-    createdAt: "2023-07-25T09:18:05.296Z",
-    updatedAt: "2024-10-05T15:00:49.257Z",
-    product_sku: "PRO21QJ",
-    isDeleted: false,
-    deletedAt: "2024-10-05T14:58:37.514Z"
-  }
-]
+import React, { ChangeEvent, useEffect, useState } from 'react'
+import Paginator from '@/app/components/paginator/Paginator';
+import { changePage, filterCategory, getProducts, removeAllFilter, searchProducts, sortProducts } from '@/libs/features/productSlice';
+import { productsApiRequest } from '@/app/fetch/product.api';
+import { HttpError } from '@/libs/utils/http';
+import { setNotify } from '@/libs/features/notifySlice';
+import FilterRemove from '@/app/icons/FilterRemove';
 
 export interface ProductState {
   data: Product[];
@@ -70,17 +22,42 @@ export interface ProductState {
 }
 
 export default function ProductList() {
-  const [products, setProducts] = useState(data);
+  const products = useAppSelector(state => state.products)
+  const categories = useAppSelector(state => state.categories)
+  const dispatch = useAppDispatch()
   const router = useRouter()
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const filterInitial = {
-    category: '',
-    search: '',
-    sort: '',
-  }
-
-  const [filter, setFilter] = useState(filterInitial);
-  const [searchInput, setSearchInput] = useState(filter.search);
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true)
+      setSearch(products.filter.search || '')
+      try {
+        const response = await productsApiRequest.getProducts(10, products.page, products.filter)
+        dispatch(getProducts({
+          data: response.payload.data,
+          total: response.payload.total,
+          page: Number(response.payload.page)
+        }))
+      } catch (error) {
+        if (error instanceof HttpError) {
+          // Handle the specific HttpError
+          console.log("Error message:", error.message);
+          // Example: show error message to the user
+          dispatch(setNotify({ error: error.message }))
+        } else {
+          // Handle other types of errors
+          console.log("An unexpected error occurred:", error);
+          dispatch(setNotify({ error: "Có lỗi xảy ra." }))
+        }
+      }
+      finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [dispatch, products.page, products.filter])
 
   const columns = [
     {
@@ -90,8 +67,13 @@ export default function ProductList() {
     },
     {
       title: 'Tên',
-      dataIndex: 'title',
       key: 'title',
+      render: (_: string, record: Product) => (
+        <Flex justify='flex-start' align='center'>
+          <Avatar src={record.images[0].url} size={'default'} />
+          <Typography.Text>{record.title}</Typography.Text>
+        </Flex>
+      )
     },
     {
       title: 'Danh mục',
@@ -128,8 +110,28 @@ export default function ProductList() {
       key: 'modify',
       render: (_: string, record: Product) => (
         <Flex justify='center' gap={15}>
-          <Col><FormOutlined onClick={() => handleRedirectToUpdate(record)} style={{ fontSize: '18px' }} /></Col>
-          <Col><DeleteOutlined onClick={() => handleDeleteProduct(record)} style={{ fontSize: '18px' }} /></Col>
+          <Col>
+            <Button 
+              icon={<FormOutlined style={{ fontSize: '18px' }} />} 
+              onClick={() => handleRedirectToUpdate(record)}>
+            </Button>
+          </Col>
+          <Col>
+            <Popconfirm
+              title="Xoá sản phẩm"
+              description="Bạn có chắc muốn xóa sản phẩm này không?"
+              onConfirm={() => handleDeleteProduct(record)}
+              icon={
+                <QuestionCircleOutlined
+                  style={{
+                    color: 'red',
+                  }}
+                />
+              }
+            >
+              <Button icon={<DeleteOutlined style={{ fontSize: '18px' }} />}></Button>
+            </Popconfirm>
+          </Col>
         </Flex>)
     }
   ];
@@ -139,84 +141,110 @@ export default function ProductList() {
   }
 
   function handleShowOrHideProduct(product: Product) {
-    const updatedData = data.map(item => {
-      if (item._id === product._id) {
-        return { ...item, isPublished: !product.isPublished }
-      }
-      return item;
-    })
-    setProducts(updatedData);
+
   }
 
   function handleRedirectToUpdate(product: Product) {
     router.push(`/products/update/${product._id}`)
   }
 
-  function handleDeleteProduct(product: Product) {
-    const _data = data.filter(item => item._id !== product._id);
-    setProducts(_data)
+  async function handleDeleteProduct(product: Product) {
+    console.log(product);
   }
 
-  function onSearchChange(e: ChangeEvent<HTMLInputElement>) {
-    setSearchInput(e.target.value);
-  }
-
-  function onCategoryChange(value: string) {
-    const _filter = { ...filter, category: value }
-    setFilter(_filter);
+  async function onCategoryChange(value: string) {
+    dispatch(filterCategory(value))
   }
 
   function onSortChange(value: string) {
-    const _filter = { ...filter, sort: value }
-    setFilter(_filter);
+    dispatch(sortProducts(value))
   }
 
   function onSearch(value: string) {
-    const _filter = { ...filter, search: value }
-    setFilter(_filter);
+    dispatch(searchProducts(value))
+  }
+
+  function handleChangePage(num: number) {
+    dispatch(changePage(num))
+  }
+
+  function handleFilterRemove() {
+    dispatch(removeAllFilter())
+  }
+
+  function onSearchChange(e: ChangeEvent<HTMLInputElement>) {
+    setSearch(e.target.value);
   }
 
   return (
     <div className='products-list-container'>
       <div className={styles['filter-navigator']}>
-          <Row gutter={[16, 16]}>
-            <Col md={14} sm={24}>
-              <Search placeholder="input search text" onSearch={onSearch} enterButton value={searchInput} onChange={onSearchChange} />
-            </Col>
-            <Col md={10} sm={24}>
-                <Row gutter={[16, 16]} justify={'end'}>
-                  <Col>
-                    <Select onChange={onCategoryChange} value={filter.category}>
-                      <Select.Option value="">Show: Tất cả</Select.Option>
-                    </Select>
-                  </Col>
-                  <Col>
-                    <Select onChange={onSortChange} value={filter.sort}>
-                      <Select.Option value="">Sắp xếp: Tự động</Select.Option>
-                      <Select.Option value="sort=-createdAt">Mới nhất</Select.Option>
-                      <Select.Option value="sort=createdAt">Cũ nhất</Select.Option>
-                      <Select.Option value="sort=-sold">Best sales</Select.Option>
-                      <Select.Option value="sort=-rating">Best rating</Select.Option>
-                      <Select.Option value="sort=-price">Giá: Cao -&gt; Thấp</Select.Option>
-                      <Select.Option value="sort=price">Giá: Thấp -&gt; Cao</Select.Option>
-                    </Select>
-                  </Col>
-                </Row>
-            </Col>
-          </Row>
+        <Row gutter={[16, 16]}>
+          <Col md={14} sm={24}>
+            <Row>
+              <Col md={2} sm={3}>
+                <Button icon={<FilterRemove />} onClick={handleFilterRemove}></Button>
+              </Col>
+              <Col md={22} sm={21}>
+                <Search
+                  placeholder="input search text"
+                  onSearch={onSearch}
+                  onChange={onSearchChange}
+                  value={search}
+                  enterButton
+                />
+              </Col>
+            </Row>
+          </Col>
+          <Col md={10} sm={24}>
+            <Row gutter={[16, 16]} justify={'end'}>
+              <Col>
+                <Select
+                  onChange={onCategoryChange}
+                  defaultValue={""} style={{ minWidth: '152px' }}
+                  value={products.filter.category}
+                >
+                  <Select.Option value="">Show: Tất cả</Select.Option>
+                  {
+                    categories.data.map(cate => (
+                      <Select.Option key={cate._id} value={cate._id}>{cate.name}</Select.Option>
+                    ))
+                  }
+                </Select>
+              </Col>
+              <Col>
+                <Select
+                  onChange={onSortChange}
+                  value={products.filter.sort}
+                  defaultValue={""}
+                  style={{ minWidth: '152px' }}
+                >
+                  <Select.Option value="">Sắp xếp: Tự động</Select.Option>
+                  <Select.Option value="-createdAt">Mới nhất</Select.Option>
+                  <Select.Option value="createdAt">Cũ nhất</Select.Option>
+                  <Select.Option value="-sold">Best sales</Select.Option>
+                  <Select.Option value="-rating">Best rating</Select.Option>
+                  <Select.Option value="-price">Giá: Cao -&gt; Thấp</Select.Option>
+                  <Select.Option value="price">Giá: Thấp -&gt; Cao</Select.Option>
+                </Select>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
       </div>
       <div className='table-products-list'>
-        <Table 
-          dataSource={products} 
-          columns={columns} rowKey='_id' 
-          pagination={false} 
-          scroll={{ x: 'max-content'}}
+        <Table
+          dataSource={products.data}
+          columns={columns} rowKey='_id'
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+          loading={loading}
         />
-        {/* <Paginator<ProductState>  
-            list={products}
-            total={products.total}
-            callback={handleChangePage}
-        /> */}
+        <Paginator<ProductState>
+          list={products}
+          total={products.total}
+          callback={handleChangePage}
+        />
       </div>
     </div>
   )

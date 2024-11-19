@@ -1,5 +1,6 @@
 .pagination {
     margin-top: 15px;
+    list-style-type: none;
 }
 
 .pagination .page-item  {

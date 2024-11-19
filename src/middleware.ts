@@ -46,5 +46,6 @@ export function middleware(request: NextRequest) {
 // See "Matching Paths" below to learn more
 // matcher: ['/auth', '/register', '/products/:path*']
 export const config = {
-  matcher: ["/", "/products", "/product/:path*", "/categories", "/auth/:path*"],
+  // matcher: ["/", "/products", "/product/:path*", "/categories", "/auth/:path*"],
+  matcher: ["/", "/categories", "/auth/:path*"],
 };

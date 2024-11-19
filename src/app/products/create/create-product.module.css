@@ -1,0 +1,37 @@
+/* TABLE VARIANTS */
+.variantsList {
+    min-width: 390px;
+    margin-top: 16px;
+}
+
+.variants {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.variants td,
+.variants th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+/* .variants tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .variants tr:hover {
+    background-color: #ddd;
+  } */
+
+.variants th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: "center";
+  font-weight: normal;
+}
+
+.variants thead th {
+  background-color: #fafafa;
+}

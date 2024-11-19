@@ -48,7 +48,7 @@ export default function Paginator<T extends ListData>({ list, total, limit, call
                     pages.map(num => (
                         <li key={num} className={`${styles["page-item"]} ${isActive(num) ? styles.active : ''}`}
                             onClick={() => handlePagination(num)}>
-                            <span className="page-redirect-link">
+                            <span className={styles["page-redirect-link"]}>
                                 {num}
                             </span>
                         </li>
@@ -57,9 +57,9 @@ export default function Paginator<T extends ListData>({ list, total, limit, call
 
                 {
                     page < totalPages &&
-                    <li className="page-item"
+                    <li className={styles['page-item']}
                         onClick={() => handlePagination(page + 1)}>
-                        <span className="page-redirect-link" aria-label="Next">
+                        <span className={styles["page-redirect-link"]} aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </span>
                     </li>

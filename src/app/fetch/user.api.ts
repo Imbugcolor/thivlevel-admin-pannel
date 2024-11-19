@@ -87,7 +87,8 @@ export const userApiRequest = {
         
         return window.location.href = '/auth';
     } catch (error: any) {
-        throw Error(error);
+        console.log(error)
+        throw new Error(error)
     }
   },
   forgotPassword: async(email: string) =>  http.post<{ message: string }>('/user/forgotpassword', { email }),
