@@ -1,3 +1,7 @@
+.applyToAllBtn {
+  border-radius: 6px;
+  background-color: #ddd;
+}
 /* TABLE VARIANTS */
 .variantsList {
     min-width: 390px;

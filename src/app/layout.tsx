@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "react-quill/dist/quill.snow.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import HeaderLayout from "./components/layout/header/HeaderLayout";
 import SiderLayout from "./components/layout/sider/SiderLayout";

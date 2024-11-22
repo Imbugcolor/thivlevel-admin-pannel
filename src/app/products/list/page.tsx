@@ -8,7 +8,7 @@ import Search from 'antd/es/input/Search';
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Paginator from '@/app/components/paginator/Paginator';
-import { changePage, filterCategory, getProducts, removeAllFilter, searchProducts, sortProducts } from '@/libs/features/productSlice';
+import { changePage, deleteProductAction, filterCategory, getProducts, removeAllFilter, searchProducts, sortProducts, updatePublish } from '@/libs/features/productSlice';
 import { productsApiRequest } from '@/app/fetch/product.api';
 import { HttpError } from '@/libs/utils/http';
 import { setNotify } from '@/libs/features/notifySlice';
@@ -28,6 +28,7 @@ export default function ProductList() {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const token = useAppSelector(state => state.auth).token
 
   useEffect(() => {
     const fetch = async () => {
@@ -140,8 +141,23 @@ export default function ProductList() {
     console.log(product);
   }
 
-  function handleShowOrHideProduct(product: Product) {
-
+  async function handleShowOrHideProduct(product: Product) {
+    if (!token) return;
+    try {
+      dispatch(updatePublish({ id: product._id, isPublished: !product.isPublished }))
+      await productsApiRequest.publish(
+        token, dispatch, product._id,{ publish: !product.isPublished }
+      )
+    } catch (error) {
+      if (error instanceof HttpError) {
+        console.log("Error message:", error.message);
+        dispatch(setNotify({ error: error.message }))
+      } else {
+        console.log("An unexpected error occurred:", error);
+        dispatch(setNotify({ error: "Có lỗi xảy ra." }))
+      }
+      dispatch(updatePublish({ id: product._id, isPublished: product.isPublished }))
+    }
   }
 
   function handleRedirectToUpdate(product: Product) {
@@ -149,7 +165,19 @@ export default function ProductList() {
   }
 
   async function handleDeleteProduct(product: Product) {
-    console.log(product);
+    if (!token) return;
+    try {
+      await productsApiRequest.delete(token, dispatch, product._id)
+      dispatch(deleteProductAction(product._id))
+    } catch (error) {
+      if (error instanceof HttpError) {
+        console.log("Error message:", error.message);
+        dispatch(setNotify({ error: error.message }))
+      } else {
+        console.log("An unexpected error occurred:", error);
+        dispatch(setNotify({ error: "Có lỗi xảy ra." }))
+      }
+    }
   }
 
   async function onCategoryChange(value: string) {

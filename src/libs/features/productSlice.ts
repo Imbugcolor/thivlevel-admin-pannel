@@ -43,12 +43,14 @@ export const ProductSlice = createSlice({
     },
     searchProducts: (state, action: PayloadAction<string>) => {
       state.filter.search = action.payload;
+      state.page = 1;
     },
     sortProducts: (state, action: PayloadAction<string>) => {
       state.filter.sort = action.payload;
     },
     filterCategory: (state, action: PayloadAction<string>) => {
       state.filter.category = action.payload;
+      state.page = 1;
     },
     filterPrice: (state, action: PayloadAction<{ fromPrice?: string, toPrice?: string }>) => {
       if (action.payload.fromPrice === '') {
@@ -82,13 +84,13 @@ export const ProductSlice = createSlice({
     changePage: (state, action: PayloadAction<number>) => {
       state.page = action.payload;
     },
-    updatePublish: (state, action: PayloadAction<{ id: string, isPublised: boolean}>) => {
-      const { id, isPublised } = action.payload;
+    updatePublish: (state, action: PayloadAction<{ id: string, isPublished: boolean}>) => {
+      const { id, isPublished } = action.payload;
       const product = state.data.find((product) => product._id === id);
   
       if (product) {
         // Apply the updates to the found todo
-        product.isPublished = isPublised
+        product.isPublished = isPublished
       }
     },
     deleteProductAction: (state, action: PayloadAction<string>) => {
