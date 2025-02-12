@@ -247,7 +247,7 @@ export default function CreateProduct() {
         category: values.category,
         variants,
         images,
-        isPublished: values.isPublished ? true : false,
+        isPublished: !!values.isPublished,
       }
 
       await productsApiRequest.create(token, dispatch, body)
@@ -349,7 +349,7 @@ export default function CreateProduct() {
           message: "Giá tiền không thể để trống.",
         },
       ]}>
-        <InputNumber placeholder='$ Giá tiền ($USD)' addonAfter="$" />
+        <InputNumber placeholder='$ Giá tiền ($USD)' addonAfter="$" min={0}/>
       </Form.Item>
       <Form.Item
         label="Danh mục"

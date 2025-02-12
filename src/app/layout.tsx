@@ -9,6 +9,7 @@ import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "@/libs/interfaces/jwtPayload.interface";
 import StoreProvider from "./StoreProvider";
 import Notify from "./components/toast/Notify";
+import Events from "./events/Events";
 
 export const metadata: Metadata = {
   title: "Thivlevel",
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body>
       <StoreProvider refreshToken={token}>
         <AntdRegistry>
+          <Events />
           <Notify />
           {
             isAdmin() ? <>

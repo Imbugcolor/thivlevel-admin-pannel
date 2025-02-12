@@ -9,10 +9,10 @@ export interface AddressFullObject {
     ward: AddressLocation,
 }
 
-export interface AddressProfile extends AddressLocation {
+export interface AddressProfile extends AddressFullObject {
     detailAddress: string,
 }
 
-export interface ShippingAddress extends AddressLocation {
+export interface ShippingAddress extends AddressFullObject {
     detailAddress: string,
 }

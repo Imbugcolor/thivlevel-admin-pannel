@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Provider } from "react-redux";
-import { NEXT_SERVER_URL, NUM_PER_PAGE } from "@/config";
+import { BACKEND_SERVER_URL, NEXT_SERVER_URL, NUM_PER_PAGE } from "@/config";
 import { userApiRequest } from "./fetch/user.api";
 import { AppStore, makeStore } from "@/libs/store";
 import { login } from "@/libs/features/authSlice";
@@ -9,6 +9,11 @@ import { setNotify } from "@/libs/features/notifySlice";
 import { getProducts } from "@/libs/features/productSlice";
 import { Category } from "@/libs/interfaces/schema/category/category.interface";
 import { getCategories } from "@/libs/features/categorySlice";
+import { io } from "socket.io-client";
+import { connect } from "@/libs/features/clientSlice";
+import { HttpError } from "@/libs/utils/http";
+import { notificationRequest } from "./fetch/notification.api";
+import { getNotifications } from "@/libs/features/notificationSlice";
 
 export default function StoreProvider({
   refreshToken,
@@ -50,32 +55,32 @@ export default function StoreProvider({
     }
   }, [refreshToken]);
 
-  //   useEffect(() => {
-  //     if (accessToken) {
-  //       // create new socket
-  //       const socket = io((BACKEND_SERVER_URL ? BACKEND_SERVER_URL : ''), {
-  //         extraHeaders: {
-  //           Authorization: `Bearer ${accessToken}` // WARN: this will be ignored in a browser
-  //         }
-  //       })
+    useEffect(() => {
+      if (accessToken) {
+        // create new socket
+        const socket = io((BACKEND_SERVER_URL ? BACKEND_SERVER_URL : ''), {
+          extraHeaders: {
+            Authorization: `Bearer ${accessToken}` // WARN: this will be ignored in a browser
+          }
+        })
 
-  //       socket.on('connect', () => {
-  //         if (storeRef.current) {
-  //           // Create the store instance the first time this renders
-  //           storeRef.current.dispatch(connect(socket))
-  //         }
-  //       });
+        socket.on('connect', () => {
+          if (storeRef.current) {
+            // Create the store instance the first time this renders
+            storeRef.current.dispatch(connect(socket))
+          }
+        });
 
-  //       return () => {
-  //         socket.off('connect', () => {
-  //           if (storeRef.current) {
-  //             // Create the store instance the first time this renders
-  //             storeRef.current.dispatch(connect(socket))
-  //           }
-  //         })
-  //       }
-  //     }
-  //   }, [accessToken])
+        return () => {
+          socket.off('connect', () => {
+            if (storeRef.current) {
+              // Create the store instance the first time this renders
+              storeRef.current.dispatch(connect(socket))
+            }
+          })
+        }
+      }
+    }, [accessToken])
 
   useEffect(() => {
     if (accessToken) {
@@ -107,37 +112,37 @@ export default function StoreProvider({
     }
   }, [accessToken]);
 
-  //   useEffect(() => {
-  //     if (accessToken && storeRef.current) {
-  //       const fetch = async () => {
-  //         try {
-  //             const response = await privateNotificationRequest.get(accessToken, storeRef.current?.dispatch, 10, 1);
-  //             if (storeRef.current) {
-  //               storeRef.current.dispatch(getAdminNotifications({
-  //                 data: response.payload.data,
-  //                 total: response.payload.total,
-  //                 page: parseInt(response.payload.page),
-  //               }))
-  //             }
-  //         } catch (error) {
-  //           if (error instanceof HttpError) {
-  //             if (storeRef.current) {
-  //               // Create the store instance the first time this renders
-  //               storeRef.current.dispatch(setNotify({ error: error.message }))
-  //             }
-  //           } else {
-  //             // Handle other types of errors
-  //             console.log("An unexpected error occurred:", error);
-  //             if (storeRef.current) {
-  //               storeRef.current.dispatch(setNotify({ error: 'Lỗi hệ thống.' }))
+    useEffect(() => {
+      if (accessToken && storeRef.current) {
+        const fetch = async () => {
+          try {
+              const response = await notificationRequest.get(accessToken, storeRef.current?.dispatch, 5, 1);
+              if (storeRef.current) {
+                storeRef.current.dispatch(getNotifications({
+                  data: response.payload.data,
+                  total: response.payload.total,
+                  page: parseInt(response.payload.page),
+                }))
+              }
+          } catch (error) {
+            if (error instanceof HttpError) {
+              if (storeRef.current) {
+                // Create the store instance the first time this renders
+                storeRef.current.dispatch(setNotify({ error: error.message }))
+              }
+            } else {
+              // Handle other types of errors
+              console.log("An unexpected error occurred:", error);
+              if (storeRef.current) {
+                storeRef.current.dispatch(setNotify({ error: 'Lỗi hệ thống.' }))
 
-  //             }
-  //           }
-  //         }
-  //       }
-  //       fetch()
-  //     }
-  //   }, [accessToken])
+              }
+            }
+          }
+        }
+        fetch()
+      }
+    }, [accessToken])
 
   useEffect(() => {
     fetch(

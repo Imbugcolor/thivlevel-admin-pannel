@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "./libs/interfaces/jwtPayload.interface";
 
-const privatePaths = ["/"];
+const privatePaths = ["/", "/products", "/orders", "/categories"];
 const authPaths = ["/auth"];
 // const productEditRegex = /^\/products\/\d+\/edit$/
 
@@ -13,8 +13,11 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("refreshtoken")?.value;
 
   // Check if path is protected
-  const isProtectedPath = privatePaths.some((path) => pathname.startsWith(path));
-  
+  // Check if the path is protected using regex to include sub-paths
+  const isProtectedPath = privatePaths.some((path) =>
+    pathname.startsWith(path)
+  );
+
   // Check if path is excluded from protection
   const isExcludedPath = authPaths.some((path) => pathname.startsWith(path));
 
@@ -24,19 +27,23 @@ export function middleware(request: NextRequest) {
 
     const decode: JwtPayload = jwtDecode(token);
 
-    if (decode.role.some(rl => rl === 'admin')) {
-        return true;
-    }
+    return decode.role.some((rl) => rl === "admin");
 
-    return false;
+
   }; // Or check for a JWT header, session, etc.
 
   const isAuthenticaton = checkAuth();
 
   if (isProtectedPath && !isExcludedPath && !isAuthenticaton) {
     // Redirect to login if not authenticated and trying to access a protected path
-    const loginUrl = new URL('/auth', request.url);
+    const loginUrl = new URL("/auth", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (isExcludedPath && isAuthenticaton) {
+    // Redirect to login if not authenticated and trying to access a protected path
+    const homeUrl = new URL("/", request.url);
+    return NextResponse.redirect(homeUrl);
   }
 
   // Continue to the requested page if authenticated or excluded
@@ -46,6 +53,10 @@ export function middleware(request: NextRequest) {
 // See "Matching Paths" below to learn more
 // matcher: ['/auth', '/register', '/products/:path*']
 export const config = {
-  // matcher: ["/", "/products", "/product/:path*", "/categories", "/auth/:path*"],
-  matcher: ["/", "/categories", "/auth/:path*"],
+  matcher: [
+      "/", "/products", "/products/:path*", 
+      "/categories", "/auth/:path*", 
+      "/orders", "/orders/:path*"
+  ],
+  // matcher: ["/", "/categories", "/auth/:path*"],
 };

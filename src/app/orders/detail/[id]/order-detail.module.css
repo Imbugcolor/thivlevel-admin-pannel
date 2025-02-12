@@ -1,0 +1,22 @@
+.change-status-dropdown {
+    margin-bottom: 16px;
+}
+
+.order-item {
+    margin-bottom: 16px;
+}
+
+.order-item-container {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 16px;
+}
+
+.order-payment-list {
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+}
+
+.order-payment-item {
+    margin: 5px 0
+}
